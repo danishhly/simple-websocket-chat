@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WebSocket Chat</title>
+</head>
+<body>
+    <h1>Real-Time Chat Demo</h1>
+    <div id="messages"></div>
+    <form id="input-form">
+        <input type="text" id="message-input" placeholder="Type your message..." required>
+        <button type="submit">Send</button>
+    </form>
+
+    <script>
+        // Use wss:// for secure connections, but we use ws:// for localhost
+        const socket = new WebSocket('ws://localhost:8080');
+        const messagesDiv = document.getElementById('messages');
+        const form = document.getElementById('input-form');
+        const input = document.getElementById('message-input');
+
+        // 1. CONNECTION ESTABLISHED: Fires after the handshake is complete
+        socket.onopen = () => {
+            console.log('Connected to the server!');
+            displayMessage('System: Connection Established');
+        };
+
+        // 2. RECEIVING DATA: Fires when the server pushes a message
+        socket.onmessage = (event) => {
+            displayMessage(`Received: ${event.data}`);
+        };
+        
+        // 3. SENDING DATA: Fires when the user submits the form
+        form.onsubmit = (event) => {
+            event.preventDefault(); // Prevent page reload
+            const message = input.value;
+            socket.send(message);
+            input.value = ''; // Clear input field
+            // Note: The message will appear on this client when the server broadcasts it back.
+        };
+
+        // 4. HANDLE CLOSE/ERROR
+        socket.onclose = () => {
+            displayMessage('System: Connection Closed');
+        };
+
+        function displayMessage(text) {
+            const el = document.createElement('p');
+            el.textContent = text;
+            messagesDiv.appendChild(el);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight; // Auto-scroll to bottom
+        }
+    </script>
+</body>
+</html>
